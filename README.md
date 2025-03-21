@@ -4,7 +4,7 @@ A Flutter project to monitor pool sensor data in real-time using MQTT.
 
 ## Overview
 
-This Flutter application is designed to monitor and display real-time pool sensor data, including pH levels, temperature, chlorine concentration, and other parameters from an IoT device using the MQTT protocol. It enables seamless data retrieval and visualization on a mobile platform.
+This github repository includes only mobile part of the project. This Flutter application is designed to monitor and display real-time pool sensor data, including pH levels, temperature, chlorine concentration, and other parameters from an IoT device using the MQTT protocol. It enables seamless data retrieval and visualization on a mobile platform.
 
 ---
 
