@@ -6,7 +6,8 @@ import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
 class MqttService {
-  static String broker = "1bd1cd42519c4824a7187d4e1fe35646.s1.eu.hivemq.cloud";
+  static String broker =
+      "ssl://1bd1cd42519c4824a7187d4e1fe35646.s1.eu.hivemq.cloud";
   static String username = "ilhami";
   static String password = "12.62.52iLHA";
   static List<String> topicList = ["zigbee/sensor"];
@@ -14,9 +15,10 @@ class MqttService {
   late MqttServerClient client;
 
   final StreamController<Map<String, dynamic>> _messageStreamController =
-  StreamController<Map<String, dynamic>>.broadcast();
+      StreamController<Map<String, dynamic>>.broadcast();
 
-  Stream<Map<String, dynamic>> get messageStream => _messageStreamController.stream;
+  Stream<Map<String, dynamic>> get messageStream =>
+      _messageStreamController.stream;
 
   MqttService() {
     client = MqttServerClient.withPort(broker, 'flutter_client', 8883);
@@ -36,13 +38,15 @@ class MqttService {
 
     // PEM yükle ve güvenilir sertifikaya ekle
     final context = SecurityContext(withTrustedRoots: false);
-    final ByteData certData = await rootBundle.load('assets/cert/hivemq_root_ca.pem');
+    final ByteData certData =
+        await rootBundle.load('assets/cert/hivemq_root_ca.pem');
     context.setTrustedCertificatesBytes(certData.buffer.asUint8List());
 
     client.securityContext = context;
 
     final connMess = MqttConnectMessage()
-        .withClientIdentifier('flutter_client_${DateTime.now().millisecondsSinceEpoch}')
+        .withClientIdentifier(
+            'flutter_client_${DateTime.now().millisecondsSinceEpoch}')
         .authenticateAs(username, password)
         .startClean()
         .withWillQos(MqttQos.atLeastOnce);
@@ -60,7 +64,6 @@ class MqttService {
     }
   }
 
-
   void onConnected() {
     print('✔️ MQTT bağlantısı başarılı!');
     for (String topic in topicList) {
@@ -69,7 +72,8 @@ class MqttService {
 
     client.updates?.listen((List<MqttReceivedMessage<MqttMessage?>> messages) {
       final recMess = messages[0].payload as MqttPublishMessage;
-      final payloadStr = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+      final payloadStr =
+          MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
 
       print('[${messages[0].topic}] Gelen JSON: $payloadStr');
 
