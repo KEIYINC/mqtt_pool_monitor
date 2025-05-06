@@ -1,10 +1,10 @@
 name: mqtt_pool_monitor
 description: "A new Flutter project"
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.2.3 <4.0.0'
+  sdk: ">=3.2.3 <4.0.0"
 
 dependencies:
   flutter:
@@ -18,4 +18,7 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 
 flutter:
-  uses-material-design: true 
+  uses-material-design: true
+
+  assets:
+    - assets/cert/ca.pem
