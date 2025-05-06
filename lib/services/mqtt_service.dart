@@ -36,7 +36,7 @@ class MqttService {
 
     // PEM yükle ve güvenilir sertifikaya ekle
     final context = SecurityContext(withTrustedRoots: false);
-    final ByteData certData = await rootBundle.load('assets/cert/ca.pem');
+    final ByteData certData = await rootBundle.load('assets/cert/hivemq_root_ca.pem');
     context.setTrustedCertificatesBytes(certData.buffer.asUint8List());
 
     client.securityContext = context;

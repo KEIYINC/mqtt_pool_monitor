@@ -21,4 +21,4 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/cert/ca.pem
+    - assets/cert/hivemq_root_ca.pem
