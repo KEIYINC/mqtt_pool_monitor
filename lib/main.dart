@@ -42,7 +42,6 @@ class _MyAppState extends State<MyApp> {
           orp = data['orp']?.toString() ?? '-';
         });
       });
-
     }
   }
 
@@ -59,7 +58,8 @@ class _MyAppState extends State<MyApp> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(fontSize: 18)),
-          Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(value,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         ],
       ),
     );
@@ -74,22 +74,23 @@ class _MyAppState extends State<MyApp> {
           padding: const EdgeInsets.all(20.0),
           child: isConnected
               ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              sensorTile('pH', ph),
-              sensorTile('Sıcaklık (°C)', temperature),
-              sensorTile('TDS', tds),
-              sensorTile('EC', ec),
-              sensorTile('ORP', orp),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  mqttService.publishMessage("test/topic", "Flutter'dan test mesajı!");
-                },
-                child: Text("Test Mesajı Gönder"),
-              ),
-            ],
-          )
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    sensorTile('pH', ph),
+                    sensorTile('Sıcaklık (°C)', temperature),
+                    sensorTile('TDS', tds),
+                    sensorTile('EC', ec),
+                    sensorTile('ORP', orp),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        mqttService.publishMessage(
+                            "test/topic", "Flutter'dan test mesajı!");
+                      },
+                      child: Text("Test Mesajı Gönder"),
+                    ),
+                  ],
+                )
               : Center(child: Text("MQTT bağlantısı kuruluyor...")),
         ),
       ),

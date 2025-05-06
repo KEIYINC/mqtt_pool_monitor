@@ -6,8 +6,7 @@ import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
 class MqttService {
-  static String broker =
-      "ssl://1bd1cd42519c4824a7187d4e1fe35646.s1.eu.hivemq.cloud";
+  static String broker = "1bd1cd42519c4824a7187d4e1fe35646.s1.eu.hivemq.cloud";
   static String username = "ilhami";
   static String password = "12.62.52iLHA";
   static List<String> topicList = ["zigbee/sensor"];
