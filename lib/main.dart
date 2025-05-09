@@ -1,68 +1,56 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'services/mqtt_service.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  late MqttService mqttService;
-  String ph = '-';
-  String temperature = '-';
-  String tds = '-';
-  String ec = '-';
-  String orp = '-';
-  bool isConnected = false;
+  late WebSocketChannel channel;
+
+  double? ph, temperature;
+  int? tds, ec, orp;
 
   @override
   void initState() {
     super.initState();
-    mqttService = MqttService();
-    _connectAndListen();
-  }
 
-  Future<void> _connectAndListen() async {
-    final connected = await mqttService.connect();
-    if (connected) {
-      setState(() => isConnected = true);
+    channel = WebSocketChannel.connect(Uri.parse('ws://10.0.2.2:8080'));
 
-      mqttService.messageStream.listen((data) {
-        if (data == null) return;
+    channel.stream.listen((message) {
+      print('📨 Gelen mesaj: $message');
+
+      try {
+        final outer = jsonDecode(message);
+        final inner = jsonDecode(outer["payload"]);
+
         setState(() {
-          ph = data['ph']?.toStringAsFixed(2) ?? '-';
-          temperature = data['temperature']?.toStringAsFixed(2) ?? '-';
-          tds = data['tds']?.toString() ?? '-';
-          ec = data['ec']?.toString() ?? '-';
-          orp = data['orp']?.toString() ?? '-';
+          ph = inner["ph"]?.toDouble();
+          temperature = inner["temperature"]?.toDouble();
+          tds = inner["tds"]?.toInt();
+          ec = inner["ec"]?.toInt();
+          orp = inner["orp"]?.toInt();
         });
-      });
-    }
+      } catch (e) {
+        print("❌ Parse hatası: $e");
+      }
+    }, onError: (err) {
+      print('❌ WebSocket hatası: $err');
+    });
+
+    print("✅ WebSocket bağlandı");
   }
 
   @override
   void dispose() {
-    mqttService.dispose();
+    channel.sink.close();
     super.dispose();
-  }
-
-  Widget sensorTile(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(fontSize: 18)),
-          Text(value,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        ],
-      ),
-    );
   }
 
   @override
@@ -71,29 +59,23 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         appBar: AppBar(title: Text('MQTT Sensör Verileri')),
         body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: isConnected
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    sensorTile('pH', ph),
-                    sensorTile('Sıcaklık (°C)', temperature),
-                    sensorTile('TDS', tds),
-                    sensorTile('EC', ec),
-                    sensorTile('ORP', orp),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        mqttService.publishMessage(
-                            "test/topic", "Flutter'dan test mesajı!");
-                      },
-                      child: Text("Test Mesajı Gönder"),
-                    ),
-                  ],
-                )
-              : Center(child: Text("MQTT bağlantısı kuruluyor...")),
+          padding: const EdgeInsets.all(16.0),
+          child: ph == null
+              ? Center(child: Text("Veri bekleniyor..."))
+              : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('pH: ${ph?.toStringAsFixed(2)}', style: _style()),
+              Text('Sıcaklık: ${temperature?.toStringAsFixed(1)} °C', style: _style()),
+              Text('TDS: $tds ppm', style: _style()),
+              Text('EC: $ec μS/cm', style: _style()),
+              Text('ORP: $orp mV', style: _style()),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  TextStyle _style() => TextStyle(fontSize: 18, fontWeight: FontWeight.w500);
 }
