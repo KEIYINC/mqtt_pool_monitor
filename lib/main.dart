@@ -37,6 +37,7 @@ class _MyAppState extends State<MyApp> {
         });
       } catch (e) {
         print("❌ Parse hatası: $e");
+        print("❌ Parse hatası: $e");
       }
     });
 
@@ -49,10 +50,12 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
-  Widget buildGauge(String title, double? value, double min, double max, String unit) {
+  Widget buildGauge(
+      String title, double? value, double min, double max, String unit) {
     return Column(
       children: [
-        Text("$title: ${value?.toStringAsFixed(2) ?? '-'} $unit", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text("$title: ${value?.toStringAsFixed(2) ?? '-'} $unit",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         SfRadialGauge(
           axes: [
             RadialAxis(
@@ -61,14 +64,16 @@ class _MyAppState extends State<MyApp> {
               showLabels: true,
               showTicks: true,
               ranges: [
-                GaugeRange(startValue: min, endValue: max, color: Colors.blue[100]!),
+                GaugeRange(
+                    startValue: min, endValue: max, color: Colors.blue[100]!),
               ],
               pointers: [
                 NeedlePointer(value: value ?? 0),
               ],
               annotations: [
                 GaugeAnnotation(
-                  widget: Text("${value?.toStringAsFixed(2) ?? '-'} $unit", style: TextStyle(fontSize: 14)),
+                  widget: Text("${value?.toStringAsFixed(2) ?? '-'} $unit",
+                      style: TextStyle(fontSize: 14)),
                   angle: 90,
                   positionFactor: 0.8,
                 )
@@ -89,17 +94,17 @@ class _MyAppState extends State<MyApp> {
         body: ph == null
             ? Center(child: Text("Veri bekleniyor..."))
             : SingleChildScrollView(
-          padding: EdgeInsets.all(12),
-          child: Column(
-            children: [
-              buildGauge("pH", ph, 0, 14, ""),
-              buildGauge("Sıcaklık", temperature, 0, 100, "°C"),
-              buildGauge("TDS", tds, 0, 2000, "ppm"),
-              buildGauge("EC", ec, 0, 3000, "μS/cm"),
-              buildGauge("ORP", orp, 0, 1000, "mV"),
-            ],
-          ),
-        ),
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    buildGauge("pH", ph, 0, 14, ""),
+                    buildGauge("Sıcaklık", temperature, 0, 100, "°C"),
+                    buildGauge("TDS", tds, 0, 2000, "ppm"),
+                    buildGauge("EC", ec, 0, 3000, "μS/cm"),
+                    buildGauge("ORP", orp, 0, 1000, "mV"),
+                  ],
+                ),
+              ),
       ),
     );
   }
