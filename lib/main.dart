@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,8 +15,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late WebSocketChannel channel;
 
-  double? ph, temperature;
-  int? tds, ec, orp;
+  double? ph, temperature, tds, ec, orp;
 
   @override
   void initState() {
@@ -24,24 +24,20 @@ class _MyAppState extends State<MyApp> {
     channel = WebSocketChannel.connect(Uri.parse('ws://10.0.2.2:8080'));
 
     channel.stream.listen((message) {
-      print('📨 Gelen mesaj: $message');
-
       try {
         final outer = jsonDecode(message);
         final inner = jsonDecode(outer["payload"]);
 
         setState(() {
-          ph = inner["ph"]?.toDouble();
-          temperature = inner["temperature"]?.toDouble();
-          tds = inner["tds"]?.toInt();
-          ec = inner["ec"]?.toInt();
-          orp = inner["orp"]?.toInt();
+          ph = double.tryParse(inner["ph"].toString());
+          temperature = double.tryParse(inner["temperature"].toString());
+          tds = double.tryParse(inner["tds"].toString());
+          ec = double.tryParse(inner["ec"].toString());
+          orp = double.tryParse(inner["orp"].toString());
         });
       } catch (e) {
         print("❌ Parse hatası: $e");
       }
-    }, onError: (err) {
-      print('❌ WebSocket hatası: $err');
     });
 
     print("✅ WebSocket bağlandı");
@@ -53,29 +49,58 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
+  Widget buildGauge(String title, double? value, double min, double max, String unit) {
+    return Column(
+      children: [
+        Text("$title: ${value?.toStringAsFixed(2) ?? '-'} $unit", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        SfRadialGauge(
+          axes: [
+            RadialAxis(
+              minimum: min,
+              maximum: max,
+              showLabels: true,
+              showTicks: true,
+              ranges: [
+                GaugeRange(startValue: min, endValue: max, color: Colors.blue[100]!),
+              ],
+              pointers: [
+                NeedlePointer(value: value ?? 0),
+              ],
+              annotations: [
+                GaugeAnnotation(
+                  widget: Text("${value?.toStringAsFixed(2) ?? '-'} $unit", style: TextStyle(fontSize: 14)),
+                  angle: 90,
+                  positionFactor: 0.8,
+                )
+              ],
+            ),
+          ],
+        ),
+        SizedBox(height: 20),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(title: Text('MQTT Sensör Verileri')),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ph == null
-              ? Center(child: Text("Veri bekleniyor..."))
-              : Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        body: ph == null
+            ? Center(child: Text("Veri bekleniyor..."))
+            : SingleChildScrollView(
+          padding: EdgeInsets.all(12),
+          child: Column(
             children: [
-              Text('pH: ${ph?.toStringAsFixed(2)}', style: _style()),
-              Text('Sıcaklık: ${temperature?.toStringAsFixed(1)} °C', style: _style()),
-              Text('TDS: $tds ppm', style: _style()),
-              Text('EC: $ec μS/cm', style: _style()),
-              Text('ORP: $orp mV', style: _style()),
+              buildGauge("pH", ph, 0, 14, ""),
+              buildGauge("Sıcaklık", temperature, 0, 100, "°C"),
+              buildGauge("TDS", tds, 0, 2000, "ppm"),
+              buildGauge("EC", ec, 0, 3000, "μS/cm"),
+              buildGauge("ORP", orp, 0, 1000, "mV"),
             ],
           ),
         ),
       ),
     );
   }
-
-  TextStyle _style() => TextStyle(fontSize: 18, fontWeight: FontWeight.w500);
 }
