@@ -1,67 +1,88 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'services/mqtt_service.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  late MqttService mqttService;
-  String ph = '-';
-  String temperature = '-';
-  String tds = '-';
-  String ec = '-';
-  String orp = '-';
-  bool isConnected = false;
+  late WebSocketChannel channel;
+
+  double? ph, temperature, tds, ec, orp;
 
   @override
   void initState() {
     super.initState();
-    mqttService = MqttService();
-    _connectAndListen();
-  }
 
-  Future<void> _connectAndListen() async {
-    final connected = await mqttService.connect();
-    if (connected) {
-      setState(() => isConnected = true);
+    channel = WebSocketChannel.connect(Uri.parse('ws://10.0.2.2:8080'));
 
-      mqttService.messageStream.listen((data) {
-        if (data == null) return;
+    channel.stream.listen((message) {
+      try {
+        final outer = jsonDecode(message);
+        final inner = jsonDecode(outer["payload"]);
+
         setState(() {
-          ph = data['ph']?.toStringAsFixed(2) ?? '-';
-          temperature = data['temperature']?.toStringAsFixed(2) ?? '-';
-          tds = data['tds']?.toString() ?? '-';
-          ec = data['ec']?.toString() ?? '-';
-          orp = data['orp']?.toString() ?? '-';
+          ph = double.tryParse(inner["ph"].toString());
+          temperature = double.tryParse(inner["temperature"].toString());
+          tds = double.tryParse(inner["tds"].toString());
+          ec = double.tryParse(inner["ec"].toString());
+          orp = double.tryParse(inner["orp"].toString());
         });
-      });
-    }
+      } catch (e) {
+        print("❌ Parse hatası: $e");
+        print("❌ Parse hatası: $e");
+      }
+    });
+
+    print("✅ WebSocket bağlandı");
   }
 
   @override
   void dispose() {
-    mqttService.dispose();
+    channel.sink.close();
     super.dispose();
   }
 
-  Widget sensorTile(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: TextStyle(fontSize: 18)),
-          Text(value,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        ],
-      ),
+  Widget buildGauge(
+      String title, double? value, double min, double max, String unit) {
+    return Column(
+      children: [
+        Text("$title: ${value?.toStringAsFixed(2) ?? '-'} $unit",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        SfRadialGauge(
+          axes: [
+            RadialAxis(
+              minimum: min,
+              maximum: max,
+              showLabels: true,
+              showTicks: true,
+              ranges: [
+                GaugeRange(
+                    startValue: min, endValue: max, color: Colors.blue[100]!),
+              ],
+              pointers: [
+                NeedlePointer(value: value ?? 0),
+              ],
+              annotations: [
+                GaugeAnnotation(
+                  widget: Text("${value?.toStringAsFixed(2) ?? '-'} $unit",
+                      style: TextStyle(fontSize: 14)),
+                  angle: 90,
+                  positionFactor: 0.8,
+                )
+              ],
+            ),
+          ],
+        ),
+        SizedBox(height: 20),
+      ],
     );
   }
 
@@ -70,29 +91,20 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(title: Text('MQTT Sensör Verileri')),
-        body: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: isConnected
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        body: ph == null
+            ? Center(child: Text("Veri bekleniyor..."))
+            : SingleChildScrollView(
+                padding: EdgeInsets.all(12),
+                child: Column(
                   children: [
-                    sensorTile('pH', ph),
-                    sensorTile('Sıcaklık (°C)', temperature),
-                    sensorTile('TDS', tds),
-                    sensorTile('EC', ec),
-                    sensorTile('ORP', orp),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        mqttService.publishMessage(
-                            "test/topic", "Flutter'dan test mesajı!");
-                      },
-                      child: Text("Test Mesajı Gönder"),
-                    ),
+                    buildGauge("pH", ph, 0, 14, ""),
+                    buildGauge("Sıcaklık", temperature, 0, 100, "°C"),
+                    buildGauge("TDS", tds, 0, 2000, "ppm"),
+                    buildGauge("EC", ec, 0, 3000, "μS/cm"),
+                    buildGauge("ORP", orp, 0, 1000, "mV"),
                   ],
-                )
-              : Center(child: Text("MQTT bağlantısı kuruluyor...")),
-        ),
+                ),
+              ),
       ),
     );
   }

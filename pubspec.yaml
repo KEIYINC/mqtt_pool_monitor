@@ -11,6 +11,9 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   mqtt_client: ^10.0.0
+  web_socket_channel: ^2.4.0
+  syncfusion_flutter_gauges: ^24.2.6
+
 
 dev_dependencies:
   flutter_test:
