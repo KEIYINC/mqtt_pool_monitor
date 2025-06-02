@@ -1,6 +1,12 @@
 # mqtt_pool_monitor
 
-A Flutter project to monitor pool sensor data in real-time using MQTT.
+
+Flutter tabanlı bu mobil uygulama, IoT cihazlarından gelen havuz sensör verilerini gerçek zamanlı olarak MQTT üzerinden alır ve kullanıcıya görsel olarak sunar. Uygulama; pH, sıcaklık, TDS, EC ve ORP gibi değerleri animasyonlu göstergelerle izleme imkânı sağlar. MQTT bağlantısı TLS ile güvence altına alınır ve mobil istemci ile broker arasındaki iletişim WebSocket üzerinden kurulan bir Node.js köprüsüyle sağlanır.
+
+## 🔧 Sistem Mimarisi
+
+```text
+[ESP Sensör] → [HiveMQ MQTT Broker] → [Node.js WebSocket Gateway] → [Flutter Mobil Uygulama]
 
 ## Overview
 
