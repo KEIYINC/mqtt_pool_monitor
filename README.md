@@ -1,32 +1,44 @@
-# mqtt_pool_monitor
+# 🏊 mqtt_pool_monitor
 
-
-Flutter tabanlı bu mobil uygulama, IoT cihazlarından gelen havuz sensör verilerini gerçek zamanlı olarak MQTT üzerinden alır ve kullanıcıya görsel olarak sunar. Uygulama; pH, sıcaklık, TDS, EC ve ORP gibi değerleri animasyonlu göstergelerle izleme imkânı sağlar. MQTT bağlantısı TLS ile güvence altına alınır ve mobil istemci ile broker arasındaki iletişim WebSocket üzerinden kurulan bir Node.js köprüsüyle sağlanır.
-
-## 🔧 Sistem Mimarisi
-
-```text
-[ESP Sensör] → [HiveMQ MQTT Broker] → [Node.js WebSocket Gateway] → [Flutter Mobil Uygulama]
-
-## Overview
-
-This github repository includes only mobile part of the project. This Flutter application is designed to monitor and display real-time pool sensor data, including pH levels, temperature, chlorine concentration, and other parameters from an IoT device using the MQTT protocol. It enables seamless data retrieval and visualization on a mobile platform.
+Flutter tabanlı bu mobil uygulama, IoT cihazlarından gelen havuz sensör verilerini gerçek zamanlı olarak MQTT protokolüyle alır ve kullanıcıya sezgisel bir arayüzde görsel olarak sunar. Uygulama; pH, sıcaklık, TDS, EC ve ORP gibi değerleri animasyonlu göstergelerle izleme imkânı sağlar. MQTT bağlantısı TLS ile güvence altına alınır ve Flutter uygulaması, Node.js ile oluşturulmuş bir WebSocket Gateway üzerinden MQTT broker'a bağlanır.
 
 ---
 
-## Getting Started
+## 🔧 Sistem Mimarisi
 
-To get started with this project, you'll need to have **Flutter** installed on your machine. Follow the steps below to set up the project.
+[ESP Sensör] → [HiveMQ MQTT Broker] → [Node.js WebSocket Gateway] → [Flutter Mobil Uygulama]
 
-### Prerequisites
 
-- Install **Flutter** from [flutter.dev](https://flutter.dev/docs/get-started/install).
-- Make sure you have a working **MQTT broker** setup to send the sensor data.
-- An **ESP H2** or compatible IoT device that can send data over MQTT.
+---
 
-### Installing Dependencies
+##  Overview
 
-1. Clone the repository:
+This repository includes only the mobile part of the system. The Flutter app connects to a WebSocket gateway that bridges HiveMQ MQTT messages and visualizes real-time pool sensor metrics like pH, temperature, and chlorine levels.
 
-```bash
-git clone https://github.com/your-repo/mqtt_pool_monitor.git
+---
+
+##  Getting Started
+
+###  Prerequisites
+
+- Flutter SDK (Install: [flutter.dev](https://flutter.dev/docs/get-started/install))
+- MQTT Broker (e.g., HiveMQ Cloud)
+- ESP32/ESP8266 or similar IoT device that publishes data to MQTT
+- Node.js WebSocket Gateway (must be running at `ws://<your-ip>:8080`)
+
+###  Installation
+
+git clone https://github.com/your-username/mqtt_pool_monitor.git
+cd mqtt_pool_monitor
+flutter pub get
+flutter run
+
+## 📡 Örnek MQTT JSON Payload
+
+{
+  "ph": 7.25,
+  "temperature": 24.1,
+  "tds": 840,
+  "ec": 1520,
+  "orp": 312
+}
